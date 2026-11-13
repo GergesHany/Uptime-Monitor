@@ -1,0 +1,55 @@
+## YAML Anchors 
+
+# 1. Define the reusable template using an extension field (x-) and an anchor (&app)
+
+x-app: &app
+  build: .
+  image: localhost/uptime-monitor:latest
+  environment:
+    UPTIME_DATABASE_URL: postgresql+psycopg://postgres:gerges1020@db:5432/uptime
+    UPTIME_CHECK_INTERVAL_SECONDS: "15"
+
+## 2. Reuse the entire block with an alias (*app)
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: gerges1020
+      POSTGRES_DB: uptime
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - "5433:5432"
+    ## Health check for the database service (pg_isready is a utility that checks the connection status of a PostgreSQL database)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d uptime"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  migrate:
+    <<: *app
+    command: ["-m", "uptime.migrate"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+  api:
+    <<: *app
+    command: ["-m", "uvicorn", "uptime.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  
+  worker:
+    <<: *app
+    command: ["-m", "uptime.worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata: 
