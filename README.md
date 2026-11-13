@@ -56,7 +56,3 @@ All configuration comes from environment variables (twelve-factor):
 | `GET /healthz` | Liveness: the process is up |
 | `GET /readyz` | Readiness: the database is reachable |
 | `GET/POST /api/monitors`, `DELETE /api/monitors/{id}` | Manage monitors |
-
-## The series
-
-See [docs/episodes](docs/episodes/) for the plan and the run-of-show for each stream.
