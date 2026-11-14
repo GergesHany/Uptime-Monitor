@@ -24,6 +24,19 @@ WORKDIR /app
 RUN groupadd --gid 10001 app \
     && useradd --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
 
+RUN rm -rf \
+    /usr/local/lib/python3.14/ensurepip \
+    /usr/local/lib/python3.14/site-packages/pip \
+    /usr/local/lib/python3.14/site-packages/pip-*.dist-info \
+    /usr/local/lib/python3.14/site-packages/setuptools \
+    /usr/local/lib/python3.14/site-packages/setuptools-*.dist-info \
+    /usr/local/lib/python3.14/site-packages/_distutils_hack \
+    /usr/local/lib/python3.14/site-packages/distutils-precedence.pth \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.14 \
+    /usr/local/bin/easy_install*
+
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
 USER app
